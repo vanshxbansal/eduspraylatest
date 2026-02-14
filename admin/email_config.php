@@ -9,7 +9,7 @@
  * 3. Verify your email address
  * 4. Go to Settings > API Keys (or https://app.brevo.com/settings/keys/api)
  * 5. Click "Generate a new API key"
- * 6. Copy the API key and paste it below
+ * 6. Copy admin/email_secrets.example.php to admin/email_secrets.php and paste your API key there (email_secrets.php is gitignored)
  * 7. Go to Senders & IP > Senders and add/verify your sender email
  * 8. Replace the sender email below with your verified email
  * 
@@ -20,8 +20,12 @@
 // CONFIGURATION - UPDATE THESE VALUES
 // ============================================
 
-// Your Brevo API Key (get from https://app.brevo.com/settings/keys/api)
-define('BREVO_API_KEY', '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');
+// Brevo API Key is loaded from admin/email_secrets.php (gitignored). Copy email_secrets.example.php to email_secrets.php and add your key.
+if (file_exists(__DIR__ . '/email_secrets.php')) {
+    require_once __DIR__ . '/email_secrets.php';
+} else {
+    define('BREVO_API_KEY', '');
+}
 
 // Your verified sender email in Brevo (must be verified in Brevo dashboard)
 define('SENDER_EMAIL', 'indiaeduspray@gmail.com');

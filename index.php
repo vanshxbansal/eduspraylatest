@@ -357,10 +357,31 @@ function renderCollegeCards($cards, $categoryTitle) {
             }
             .rbt-banner-7 .rbt-button-group {
                 flex-wrap: wrap;
-                gap: 12px;
+                gap: 10px;
+                margin: 0;
+                margin-top: 20px;
             }
             .rbt-banner-7 .rbt-button-group .rbt-btn {
                 min-width: 100%;
+                width: 100%;
+                margin: 0;
+                box-sizing: border-box;
+                text-align: center;
+                justify-content: center;
+                overflow: hidden;
+                -webkit-appearance: none;
+                appearance: none;
+                outline: none;
+                border-radius: 8px;
+            }
+            .rbt-banner-7 .rbt-button-group .rbt-btn.btn-border {
+                border: 2px solid rgba(102, 126, 234, 0.5);
+                font-weight: 500;
+            }
+            /* Prevent double-bar artifact from rbt-switch-btn pseudo-element on mobile */
+            .rbt-banner-7 .rbt-button-group .rbt-btn.rbt-switch-btn span::after {
+                left: -9999px;
+                transform: translate(0, -50%);
             }
         }
         @media (max-width: 576px) {
@@ -379,9 +400,22 @@ function renderCollegeCards($cards, $categoryTitle) {
             .rbt-banner-7 .more-author-text .subtitle {
                 font-size: 12px;
             }
+            .rbt-banner-7 .rbt-button-group {
+                margin-top: 16px;
+                gap: 8px;
+            }
+            .rbt-banner-7 .rbt-button-group .rbt-btn {
+                height: 52px;
+                line-height: 52px;
+                font-size: 15px;
+                padding: 0 20px;
+            }
+            .rbt-banner-7 .rbt-button-group .rbt-btn.btn-border {
+                line-height: 48px;
+            }
             .rbt-banner-area {
                 padding-top: 24px;
-                padding-bottom: 24px;
+                padding-bottom: 16px;
             }
             .thumbnail-wrapper .card-info.bounce-slide {
                 max-width: 90%;
