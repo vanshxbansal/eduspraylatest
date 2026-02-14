@@ -1,0 +1,106 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #74b9ff, #a29bfe);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #333;
+}
+
+form i {
+    font-size: 1.8vw;
+    margin-left: 22vw;
+    transition: all .2s;
+}
+
+form i:hover{
+    color: maroon;
+}
+
+form {
+    background-color: #ffffff;
+    padding: 30px;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+h2 {
+    text-align: center;
+    color: #2d3436;
+    margin-bottom: 20px;
+}
+
+/* Floating label styles */
+.form-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+input[type="text"],
+input[type="tel"],
+input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #dfe6e9;
+    border-radius: 5px;
+    outline: none;
+    transition: 0.3s;
+    font-size: 16px;
+}
+
+label {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    color: #636e72;
+    background-color: #ffffff;
+    padding: 0 5px;
+    transition: 0.3s;
+    pointer-events: none;
+}
+
+/* Active and floating label effect */
+input:focus + label,
+input:focus + label {
+    top: 0px;
+    font-size: 12px;
+    color: #74b9ff;
+    transform: translate(-15px,-16px) scale(80px);
+    z-index: 1111;
+}
+
+input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="email"]:focus {
+    border-color: #74b9ff;
+    box-shadow: 0 0 5px rgba(116, 185, 255, 0.5);
+}
+
+/* Submit button */
+button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    background-color: #74b9ff;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button[type="submit"]:hover {
+    background-color: #0984e3;
+    box-shadow: 0 8px 16px rgba(9, 132, 227, 0.3);
+}

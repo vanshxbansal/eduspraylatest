@@ -1,0 +1,981 @@
+<?php
+/**
+ * Dynamic Course Page
+ * URL: /course.php?slug=btech
+ */
+
+require_once 'php/config.php';
+require_once 'php/courses_data.php';
+
+// Get course slug from URL
+$slug = isset($_GET['slug']) ? trim($_GET['slug']) : '';
+
+if (empty($slug)) {
+    header('Location: index.html');
+    exit;
+}
+
+// Get course from database
+try {
+    $stmt = $pdo->prepare("SELECT * FROM courses WHERE slug = ? AND status = 'active'");
+    $stmt->execute([$slug]);
+    $course = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$course) {
+        header('Location: index.html');
+        exit;
+    }
+    
+    // Get predefined content
+    $content = getCourseContent($slug);
+    $course = array_merge($course, $content);
+    
+    // Get universities offering this course
+    $stmt = $pdo->prepare("SELECT * FROM universities WHERE status = 'active' AND JSON_CONTAINS(courses, ?) ORDER BY featured DESC, name ASC");
+    $stmt->execute([json_encode($slug)]);
+    $universities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Get filter options
+    $states = $pdo->query("SELECT DISTINCT state FROM universities WHERE status = 'active' AND state IS NOT NULL ORDER BY state")->fetchAll(PDO::FETCH_COLUMN);
+    $types = ['government', 'private', 'deemed', 'autonomous'];
+    
+} catch (PDOException $e) {
+    die("Database error: " . $e->getMessage());
+}
+
+$pageTitle = $course['name'] . ' - ' . ($course['full_name'] ?? $course['name']) . ' | Eduspray India';
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo htmlspecialchars($pageTitle); ?></title>
+    <meta name="description" content="<?php echo htmlspecialchars($course['short_description'] ?? 'Learn about ' . $course['name'] . ' courses, eligibility, career options, and top universities.'); ?>">
+    
+    <link rel="shortcut icon" type="image/x-icon" href="images/02.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #e94560;
+            --primary-light: #ff6b6b;
+            --dark: #1a1a2e;
+            --darker: #16213e;
+            --darkest: #0f3460;
+            --white: #ffffff;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --text: rgba(255,255,255,0.9);
+            --text-muted: rgba(255,255,255,0.6);
+        }
+        
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 50%, var(--darkest) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        /* Animated background */
+        .bg-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .bg-shapes span {
+            position: absolute;
+            display: block;
+            background: rgba(255, 255, 255, 0.03);
+            animation: float 25s linear infinite;
+            bottom: -150px;
+            border-radius: 50%;
+        }
+        
+        .bg-shapes span:nth-child(1) { left: 25%; width: 80px; height: 80px; animation-delay: 0s; }
+        .bg-shapes span:nth-child(2) { left: 10%; width: 20px; height: 20px; animation-delay: 2s; animation-duration: 12s; }
+        .bg-shapes span:nth-child(3) { left: 70%; width: 20px; height: 20px; animation-delay: 4s; }
+        .bg-shapes span:nth-child(4) { left: 40%; width: 60px; height: 60px; animation-delay: 0s; animation-duration: 18s; }
+        .bg-shapes span:nth-child(5) { left: 65%; width: 20px; height: 20px; animation-delay: 0s; }
+        .bg-shapes span:nth-child(6) { left: 75%; width: 110px; height: 110px; animation-delay: 3s; }
+        .bg-shapes span:nth-child(7) { left: 35%; width: 150px; height: 150px; animation-delay: 7s; }
+        .bg-shapes span:nth-child(8) { left: 50%; width: 25px; height: 25px; animation-delay: 15s; animation-duration: 45s; }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
+        }
+        
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+        
+        /* Header */
+        .header {
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+        }
+        
+        .logo img { height: 36px; }
+        
+        .nav { display: flex; gap: 24px; align-items: center; }
+        .nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .nav a:hover { color: var(--primary); }
+        
+        .nav-btn {
+            padding: 8px 18px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        /* Hero */
+        .hero {
+            padding: 50px 0 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .hero-content { max-width: 700px; }
+        
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: rgba(233, 69, 96, 0.15);
+            border: 1px solid rgba(233, 69, 96, 0.3);
+            border-radius: 20px;
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .hero h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 6px;
+            line-height: 1.2;
+        }
+        
+        .hero .subtitle {
+            font-size: 15px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+        
+        .hero-meta {
+            display: flex;
+            gap: 28px;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .meta-item i {
+            width: 36px;
+            height: 36px;
+            background: rgba(233, 69, 96, 0.15);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 14px;
+        }
+        
+        .meta-item .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .meta-item .value { font-size: 14px; font-weight: 600; color: var(--white); }
+        
+        /* Quick Nav */
+        .quick-nav {
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: sticky;
+            top: 60px;
+            z-index: 99;
+        }
+        
+        .quick-nav ul {
+            display: flex;
+            gap: 6px;
+            list-style: none;
+            padding: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .quick-nav a {
+            display: block;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            color: var(--text-muted);
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+        
+        .quick-nav a:hover, .quick-nav a.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        
+        /* Sections */
+        .section {
+            padding: 40px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .section:last-child { border-bottom: none; }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .section-header i {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .section-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--white);
+        }
+        
+        /* Content Box */
+        .content-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 24px;
+        }
+        
+        .content-box p { color: var(--text-muted); margin-bottom: 16px; font-size: 13px; }
+        .content-box p:last-child { margin-bottom: 0; }
+        .content-box h4 { font-size: 14px; font-weight: 600; color: var(--white); margin: 20px 0 12px; }
+        .content-box h4:first-child { margin-top: 0; }
+        .content-box ul { padding-left: 18px; color: var(--text-muted); }
+        .content-box li { margin-bottom: 8px; font-size: 13px; }
+        .content-box strong { color: var(--primary-light); }
+        
+        /* Specialization Tags */
+        .specializations-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .spec-tag {
+            padding: 6px 12px;
+            background: rgba(233, 69, 96, 0.1);
+            border: 1px solid rgba(233, 69, 96, 0.2);
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--primary-light);
+        }
+        
+        /* Career Grid */
+        .career-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+        
+        .career-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 16px 12px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .career-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .career-card i { font-size: 20px; color: var(--primary); margin-bottom: 10px; }
+        .career-card h5 { font-size: 12px; font-weight: 600; color: var(--white); margin-bottom: 4px; }
+        .career-card p { font-size: 11px; color: #10b981; font-weight: 600; margin: 0; }
+        
+        /* Universities Section */
+        .stats-bar {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            padding: 16px 20px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 22px; font-weight: 700; color: var(--primary); }
+        .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: white;
+            font-size: 13px;
+            font-family: inherit;
+        }
+        
+        .search-box input:focus { outline: none; border-color: var(--primary); }
+        .search-box input::placeholder { color: var(--gray-600); }
+        .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gray-600); font-size: 13px; }
+        
+        .filter-select {
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: white;
+            font-size: 13px;
+            font-family: inherit;
+            cursor: pointer;
+            min-width: 120px;
+        }
+        
+        .filter-select option { background: var(--dark); }
+        
+        /* University Cards */
+        .universities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        
+        .university-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .university-card:hover {
+            border-color: rgba(233, 69, 96, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .uni-header {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            gap: 12px;
+        }
+        
+        .uni-logo {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+        
+        .uni-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+        
+        .uni-info h3 { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 4px; line-height: 1.3; }
+        .uni-location { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+        .uni-location i { font-size: 10px; }
+        
+        .uni-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+        
+        .badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .badge.government { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        .badge.private { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
+        .badge.deemed { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+        .badge.autonomous { background: rgba(236, 72, 153, 0.15); color: #ec4899; }
+        .badge.featured { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; }
+        
+        .uni-body { padding: 16px; }
+        
+        .uni-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .uni-stat { text-align: center; }
+        .uni-stat .label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; }
+        .uni-stat .value { font-size: 11px; font-weight: 600; color: var(--white); }
+        
+        .uni-fees {
+            padding: 10px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        
+        .uni-fees .label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
+        .uni-fees .value { font-size: 12px; font-weight: 600; color: #10b981; }
+        
+        .uni-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.3s;
+        }
+        
+        .uni-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(233, 69, 96, 0.3); }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            grid-column: 1 / -1;
+        }
+        
+        .empty-state i { font-size: 40px; color: var(--gray-600); margin-bottom: 12px; }
+        .empty-state h3 { font-size: 15px; color: var(--white); margin-bottom: 6px; }
+        .empty-state p { font-size: 12px; color: var(--text-muted); }
+        
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            padding: 40px 0;
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .cta-section h2 { font-size: 22px; font-weight: 700; color: white; margin-bottom: 8px; }
+        .cta-section p { font-size: 14px; color: rgba(255,255,255,0.85); margin-bottom: 20px; }
+        
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            background: white;
+            color: var(--primary);
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        
+        .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
+        
+        /* Footer */
+        .footer {
+            background: rgba(0,0,0,0.3);
+            padding: 40px 0 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-brand img { height: 32px; margin-bottom: 12px; }
+        .footer-brand p { font-size: 12px; color: var(--text-muted); line-height: 1.7; }
+        
+        .footer-links h4 { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 14px; }
+        .footer-links ul { list-style: none; }
+        .footer-links li { margin-bottom: 8px; }
+        .footer-links a { font-size: 12px; color: var(--text-muted); text-decoration: none; transition: color 0.3s; }
+        .footer-links a:hover { color: var(--primary); }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        
+        /* WhatsApp Button */
+        .whatsapp-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: #25d366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+            z-index: 1000;
+            transition: transform 0.3s;
+        }
+        
+        .whatsapp-btn:hover { transform: scale(1.1); }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 24px; }
+            .hero-meta { gap: 16px; }
+            .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+            .nav { display: none; }
+        }
+        
+        @media (max-width: 480px) {
+            .universities-grid { grid-template-columns: 1fr; }
+            .filter-bar { flex-direction: column; }
+            .footer-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated background -->
+    <div class="bg-shapes">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-inner">
+                <a href="index.html" class="logo">
+                    <img src="images/02.png" alt="Eduspray India">
+                </a>
+                <nav class="nav">
+                    <a href="index.html">Home</a>
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                    <a href="login.html" class="nav-btn">Login</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="<?php echo htmlspecialchars($course['icon'] ?? 'fas fa-graduation-cap'); ?>"></i>
+                    <span><?php echo htmlspecialchars($course['name']); ?></span>
+                </div>
+                <h1><?php echo htmlspecialchars($course['full_name'] ?? $course['name']); ?></h1>
+                <p class="subtitle"><?php echo htmlspecialchars($course['short_description'] ?? 'Explore opportunities in ' . $course['name']); ?></p>
+                
+                <div class="hero-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <div class="label">Duration</div>
+                            <div class="value"><?php echo htmlspecialchars($course['duration'] ?? '3-4 Years'); ?></div>
+                        </div>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-indian-rupee-sign"></i>
+                        <div>
+                            <div class="label">Avg. Fees</div>
+                            <div class="value"><?php echo htmlspecialchars($course['avg_fees'] ?? 'Varies'); ?></div>
+                        </div>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-university"></i>
+                        <div>
+                            <div class="label">Colleges</div>
+                            <div class="value"><?php echo count($universities); ?>+ Listed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Quick Nav -->
+    <nav class="quick-nav">
+        <div class="container">
+            <ul>
+                <li><a href="#overview" class="active">Overview</a></li>
+                <li><a href="#eligibility">Eligibility</a></li>
+                <li><a href="#universities">Universities</a></li>
+                <li><a href="#career">Career</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- Overview -->
+    <section id="overview" class="section">
+        <div class="container">
+            <div class="section-header">
+                <i class="fas fa-info-circle"></i>
+                <h2>About <?php echo htmlspecialchars($course['name']); ?></h2>
+            </div>
+            <div class="content-box">
+                <?php echo $course['description'] ?? '<p>Course description coming soon.</p>'; ?>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Eligibility -->
+    <section id="eligibility" class="section">
+        <div class="container">
+            <div class="section-header">
+                <i class="fas fa-check-circle"></i>
+                <h2>Eligibility Criteria</h2>
+            </div>
+            <div class="content-box">
+                <?php echo $course['eligibility'] ?? '<p>Eligibility information coming soon.</p>'; ?>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Universities -->
+    <section id="universities" class="section">
+        <div class="container">
+            <div class="section-header">
+                <i class="fas fa-university"></i>
+                <h2>Top Universities & Colleges</h2>
+            </div>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-value"><?php echo count($universities); ?></div>
+                    <div class="stat-label">Listed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value"><?php echo count(array_filter($universities, fn($u) => $u['type'] == 'government')); ?></div>
+                    <div class="stat-label">Govt</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value"><?php echo count(array_filter($universities, fn($u) => $u['type'] == 'private')); ?></div>
+                    <div class="stat-label">Private</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value"><?php echo count(array_filter($universities, fn($u) => $u['featured'] == 1)); ?></div>
+                    <div class="stat-label">Featured</div>
+                </div>
+            </div>
+            
+            <div class="filter-bar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search universities...">
+                </div>
+                <select class="filter-select" id="stateFilter">
+                    <option value="">All States</option>
+                    <?php foreach ($states as $state): ?>
+                    <option value="<?php echo htmlspecialchars($state); ?>"><?php echo htmlspecialchars($state); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <select class="filter-select" id="typeFilter">
+                    <option value="">All Types</option>
+                    <?php foreach ($types as $type): ?>
+                    <option value="<?php echo htmlspecialchars($type); ?>"><?php echo ucfirst(htmlspecialchars($type)); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <div class="universities-grid" id="universitiesGrid">
+                <?php if (empty($universities)): ?>
+                <div class="empty-state">
+                    <i class="fas fa-university"></i>
+                    <h3>No Universities Found</h3>
+                    <p>We're adding more universities soon!</p>
+                </div>
+                <?php else: ?>
+                    <?php foreach ($universities as $uni): ?>
+                    <div class="university-card" 
+                         data-name="<?php echo htmlspecialchars(strtolower($uni['name'] . ' ' . ($uni['short_name'] ?? ''))); ?>"
+                         data-state="<?php echo htmlspecialchars($uni['state'] ?? ''); ?>"
+                         data-type="<?php echo htmlspecialchars($uni['type'] ?? ''); ?>">
+                        <div class="uni-header">
+                            <div class="uni-logo">
+                                <?php if (!empty($uni['logo'])): ?>
+                                <img src="<?php echo htmlspecialchars($uni['logo']); ?>" alt="">
+                                <?php else: ?>
+                                <?php echo strtoupper(substr($uni['short_name'] ?? $uni['name'], 0, 2)); ?>
+                                <?php endif; ?>
+                            </div>
+                            <div class="uni-info">
+                                <h3><?php echo htmlspecialchars($uni['short_name'] ? $uni['short_name'] . ' - ' . $uni['name'] : $uni['name']); ?></h3>
+                                <div class="uni-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <?php echo htmlspecialchars(($uni['city'] ?? '') . ', ' . ($uni['state'] ?? '')); ?>
+                                </div>
+                                <div class="uni-badges">
+                                    <?php if (!empty($uni['featured'])): ?>
+                                    <span class="badge featured">Featured</span>
+                                    <?php endif; ?>
+                                    <span class="badge <?php echo htmlspecialchars($uni['type'] ?? 'private'); ?>">
+                                        <?php echo ucfirst(htmlspecialchars($uni['type'] ?? 'Private')); ?>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="uni-body">
+                            <div class="uni-stats">
+                                <div class="uni-stat">
+                                    <div class="label">Est.</div>
+                                    <div class="value"><?php echo htmlspecialchars($uni['established_year'] ?? 'N/A'); ?></div>
+                                </div>
+                                <div class="uni-stat">
+                                    <div class="label">Affiliation</div>
+                                    <div class="value"><?php echo htmlspecialchars($uni['affiliation'] ?? 'N/A'); ?></div>
+                                </div>
+                                <div class="uni-stat">
+                                    <div class="label">Rank</div>
+                                    <div class="value"><?php echo htmlspecialchars($uni['ranking'] ?? 'N/A'); ?></div>
+                                </div>
+                            </div>
+                            <div class="uni-fees">
+                                <div class="label">Fees Range</div>
+                                <div class="value">
+                                    <?php 
+                                    if ($uni['fees_min'] && $uni['fees_max']) {
+                                        echo '₹' . number_format($uni['fees_min']) . ' - ₹' . number_format($uni['fees_max']) . '/yr';
+                                    } else {
+                                        echo 'Contact for fees';
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+                            <button class="uni-btn" onclick="openInquiry('<?php echo htmlspecialchars(addslashes($uni['name'])); ?>')">
+                                <i class="fas fa-phone-alt"></i> Get Details
+                            </button>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Career -->
+    <section id="career" class="section">
+        <div class="container">
+            <div class="section-header">
+                <i class="fas fa-briefcase"></i>
+                <h2>Career Options</h2>
+            </div>
+            <div class="content-box">
+                <?php echo $course['career_options'] ?? '<p>Career information coming soon.</p>'; ?>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Need Help Choosing?</h2>
+            <p>Our expert counselors will guide you through the process</p>
+            <a href="contact.html" class="cta-btn">
+                <i class="fas fa-headset"></i> Get Free Counselling
+            </a>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <img src="images/02.png" alt="Eduspray India">
+                    <p>India's trusted educational counselor helping students find the right courses and universities.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Courses</h4>
+                    <ul>
+                        <li><a href="course.php?slug=btech">B.Tech</a></li>
+                        <li><a href="course.php?slug=bba">BBA</a></li>
+                        <li><a href="course.php?slug=bca">BCA</a></li>
+                        <li><a href="course.php?slug=medical">Medical</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="tel:+918595684716">+91 8595684716</a></li>
+                        <li><a href="mailto:contact@eduspray.in">contact@eduspray.in</a></li>
+                        <li>New Delhi, India</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                © 2025 Eduspray India. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+    
+    <!-- WhatsApp Button -->
+    <a href="https://wa.me/918595684716" class="whatsapp-btn" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+    
+    <script>
+        // Quick nav scroll
+        document.querySelectorAll('.quick-nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                const navHeight = 120;
+                window.scrollTo({ top: target.offsetTop - navHeight, behavior: 'smooth' });
+                document.querySelectorAll('.quick-nav a').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Update active nav on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                const top = section.offsetTop - 150;
+                const bottom = top + section.offsetHeight;
+                if (window.scrollY >= top && window.scrollY < bottom) {
+                    const id = section.getAttribute('id');
+                    document.querySelectorAll('.quick-nav a').forEach(l => l.classList.remove('active'));
+                    document.querySelector(`.quick-nav a[href="#${id}"]`)?.classList.add('active');
+                }
+            });
+        });
+        
+        // University filtering
+        const searchInput = document.getElementById('searchInput');
+        const stateFilter = document.getElementById('stateFilter');
+        const typeFilter = document.getElementById('typeFilter');
+        const cards = document.querySelectorAll('.university-card');
+        
+        function filterUniversities() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedState = stateFilter.value;
+            const selectedType = typeFilter.value.toLowerCase();
+            
+            cards.forEach(card => {
+                const name = card.dataset.name || '';
+                const state = card.dataset.state || '';
+                const type = card.dataset.type || '';
+                
+                const matchesSearch = name.includes(searchTerm);
+                const matchesState = !selectedState || state === selectedState;
+                const matchesType = !selectedType || type === selectedType;
+                
+                card.style.display = (matchesSearch && matchesState && matchesType) ? 'block' : 'none';
+            });
+        }
+        
+        if (searchInput) searchInput.addEventListener('input', filterUniversities);
+        if (stateFilter) stateFilter.addEventListener('change', filterUniversities);
+        if (typeFilter) typeFilter.addEventListener('change', filterUniversities);
+        
+        function openInquiry(universityName) {
+            window.location.href = `contact.html?university=${encodeURIComponent(universityName)}&course=<?php echo urlencode($course['name']); ?>`;
+        }
+    </script>
+</body>
+</html>

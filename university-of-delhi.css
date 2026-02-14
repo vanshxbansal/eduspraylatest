@@ -1,0 +1,275 @@
+body {
+  scroll-behavior: smooth;
+}
+.delhi_section {
+  margin-bottom: 150px;
+  width: 100%;
+  height: 100%;
+  scroll-behavior: smooth;
+}
+#delhi {
+  width: 100%;
+  height: 100%;
+  margin: auto;
+}
+#delhi h4 {
+  text-align: center;
+}
+.content ul li a {
+  color: blue !important;
+}
+.content_link {
+  display: flex;
+  justify-content: space-around;
+}
+.delhi_banner_section img {
+  width: 100%;
+  height: 100%;
+  margin-bottom: 60px;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+#delhi_univer {
+  width: 85%;
+  margin: auto;
+  border: 2px solid #eee;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  padding: 40px 20px;
+  padding-bottom: 10px;
+  margin-bottom: 40px;
+}
+#delhi_sec_section {
+  width: 85%;
+  margin: auto;
+  border: 2px solid #eee;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  padding: 40px 20px;
+  padding-bottom: 10px;
+}
+#Affiliated_colleges {
+  width: 85%;
+  margin: auto;
+  border: 2px solid #eee;
+  padding: 40px 20px;
+  padding-bottom: 10px;
+  margin-bottom: 40px;
+  margin-top: 40px;
+}
+#campus-wise {
+  width: 85%;
+  margin: auto;
+  border: 2px solid #eee;
+  padding: 40px 20px;
+  padding-bottom: 10px;
+  margin-bottom: 40px;
+  margin-top: 40px;
+}
+#west-wise {
+  width: 85%;
+  margin: auto;
+  border: 2px solid #eee;
+  padding: 40px 20px;
+  padding-bottom: 10px;
+  margin-bottom: 40px;
+  margin-top: 40px;
+}
+#kaun-wise {
+  width: 85%;
+  margin: auto;
+  border: 2px solid #eee;
+  padding: 40px 20px;
+  padding-bottom: 10px;
+  margin-bottom: 40px;
+  margin-top: 40px;
+}
+#south-wise {
+  width: 85%;
+  margin: auto;
+  border: 2px solid #eee;
+  padding: 40px 20px;
+  padding-bottom: 10px;
+  margin-bottom: 40px;
+  margin-top: 40px;
+}
+#east-wise {
+  width: 85%;
+  margin: auto;
+  border: 2px solid #eee;
+  padding: 40px 20px;
+  padding-bottom: 10px;
+  margin-bottom: 40px;
+  margin-top: 40px;
+}
+#central-wise {
+  width: 85%;
+  margin: auto;
+  border: 2px solid #eee;
+  padding: 40px 20px;
+  padding-bottom: 10px;
+  margin-bottom: 40px;
+  margin-top: 40px;
+}
+#addmisson-wise {
+  width: 85%;
+  margin: auto;
+  border: 2px solid #eee;
+  padding: 40px 20px;
+  padding-bottom: 10px;
+  margin-bottom: 40px;
+  margin-top: 40px;
+}
+#faq {
+  width: 85%;
+  margin: auto;
+  border: 2px solid #eee;
+  padding: 40px 20px;
+  padding-bottom: 10px;
+  margin-bottom: 40px;
+  margin-top: 40px;
+}
+table,
+tr,
+td,
+th {
+  border: 1px solid #444;
+}
+th {
+  color: #000 !important;
+  font-weight: 800;
+  text-align: center;
+}
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+td {
+  color: #000 !important;
+}
+
+.accordion {
+  width: 100%;
+}
+
+.accordion-item {
+  background-color: #fff;
+  color: #111;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.25);
+}
+
+.accordion-item-header {
+  padding: 1.5rem 1rem;
+  min-height: 3rem;
+  display: flex;
+  font-size: 1.5rem;
+  font-weight: 600;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.accordion-item-header::after {
+  content: "\002B";
+  font-size: 3rem;
+  position: absolute;
+  right: 2rem;
+}
+
+.accordion-item-header.active::after {
+  content: "\2212";
+}
+
+.accordion-item-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+}
+
+.accordion-item-body-content {
+  padding: 1rem;
+  line-height: 1.5rem;
+  border-top: 1px solid;
+  border-image: linear-gradient(to right, transparent, #34495e, transparent) 1;
+}
+
+@media (max-width: 1150px) {
+  #delhi_univer {
+    width: 100%;
+    padding: 0.8rem;
+  }
+  #delhi_sec_section {
+    width: 100%;
+    padding: 0.8rem;
+  }
+  #Affiliated_colleges {
+    width: 100%;
+    padding: 0.8rem;
+  }
+  #campus-wise {
+    width: 100%;
+    padding: 0.8rem;
+  }
+  #west-wise {
+    width: 100%;
+    padding: 0.8rem;
+  }
+  #kaun-wise {
+    width: 100%;
+    padding: 0.8rem;
+  }
+  #south-wise {
+    width: 100%;
+    padding: 0.8rem;
+  }
+  #east-wise {
+    width: 100%;
+    padding: 0.8rem;
+  }
+  #central-wise {
+    width: 100%;
+    padding: 0.8rem;
+  }
+  #addmisson-wise {
+    width: 100%;
+    padding: 0.8rem;
+  }
+  #faq {
+    width: 100%;
+    padding: 0.8rem;
+  }
+}
+@media (max-width: 750px) {
+  .content_link {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  table tr th {
+    font-size: 13px;
+  }
+  table tr td {
+    font-size: 12px;
+  }
+  .accordion-item-header {
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .accordion-item-header::after {
+    font-size: 2rem;
+  }
+  .content ul li a {
+    color: blue !important;
+    font-size: 1.3rem;
+  }
+  p{
+    font-size: 1.3rem;
+  }
+  ol li a{
+    font-size: 1.3rem;
+  }
+  h5{
+    font-size: 1.5rem;
+  }
+}
