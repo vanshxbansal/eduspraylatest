@@ -11,13 +11,11 @@
 // ============================================
 // UPDATE THESE VALUES AFTER CREATING DATABASE
 // ============================================
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'u755359476_eduspray_db');    // Your database name (with Hostinger prefix)
-// define('DB_USER', 'u755359476_eduspray_user');           // Your database username (with Hostinger prefix)
-define('DB_USER', 'root');           // Your database username (with Hostinger prefix)
-
-// define('DB_PASS', '#Vanshbansal1');
-define('DB_PASS', 'root');  
+// MAMP MySQL runs on port 8889 (use 127.0.0.1:8889 or localhost:8889)
+define('DB_HOST', '127.0.0.1:8889');
+define('DB_NAME', 'u755359476_eduspray_db');    // Create this DB in MAMP phpMyAdmin if missing
+define('DB_USER', 'root');
+define('DB_PASS', 'root');   // MAMP default is often "root"; use '' if you changed it  
 
 // ============================================
 // DO NOT MODIFY BELOW THIS LINE
