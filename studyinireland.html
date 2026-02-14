@@ -99,6 +99,31 @@ fbq('track', 'PageView');
 src="https://www.facebook.com/tr?id=1155178309670051&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
+<style>
+/* Match index/course page: header and What's New – no overlap */
+.rbt-sticky-placeholder { display: none !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
+.rbt-header { position: relative !important; width: 100%; z-index: 999; }
+.rbt-header-top, .rbt-header-wrapper, .rbt-header.rbt-header-8 { position: relative !important; width: 100%; }
+@media (min-width: 1200px) { .rbt-main-navigation.d-none.d-xl-block { display: flex !important; } }
+@media (max-width: 1199px) { .rbt-main-navigation.d-none.d-xl-block { display: none !important; } }
+.rbt-main-navigation .mainmenu li a { white-space: nowrap !important; }
+#notification-banner-placeholder { margin-top: 12px; margin-bottom: 0; position: relative; z-index: 2; overflow: hidden; width: 100%; }
+#notification-banner-placeholder .whats-new-section { background: white; padding: 8px 0; border-bottom: 1px solid #e5e7eb; overflow: hidden; width: 100%; box-sizing: border-box; }
+#notification-banner-placeholder .whats-new-header { display: flex; align-items: center; gap: 15px; margin-bottom: 6px; flex-wrap: wrap; }
+#notification-banner-placeholder .whats-new-header h2 { font-size: 16px; font-weight: 700; color: #1a1a2e; margin: 0; white-space: nowrap; }
+#notification-banner-placeholder .whats-new-view-all { color: #0ea5e9; font-weight: 600; font-size: 14px; text-decoration: none; }
+#notification-banner-placeholder .whats-new-view-all:hover { text-decoration: underline; }
+#notification-banner-placeholder .whats-new-ticker-wrapper { overflow: hidden; width: 100%; }
+#notification-banner-placeholder .whats-new-ticker { display: flex; gap: 30px; animation: scrollTicker 30s linear infinite; width: max-content; }
+#notification-banner-placeholder .whats-new-ticker:hover { animation-play-state: paused; }
+@keyframes scrollTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+#notification-banner-placeholder .update-item { display: inline-flex; align-items: center; gap: 15px; padding: 8px 15px; background: #f8f9fa; border-radius: 6px; border-left: 3px solid #0ea5e9; white-space: nowrap; min-width: max-content; }
+#notification-banner-placeholder .update-item h3 { font-size: 13px; font-weight: 600; color: #1a1a2e; margin: 0; }
+#notification-banner-placeholder .update-item h3 a { color: #1a1a2e; text-decoration: none; }
+#notification-banner-placeholder .update-item h3 a:hover { color: #0ea5e9; }
+#notification-banner-placeholder .update-meta { font-size: 11px; color: #666; display: flex; gap: 10px; align-items: center; }
+@media (max-width: 768px) { #notification-banner-placeholder { margin-top: 12px; } #notification-banner-placeholder .whats-new-section { padding: 8px 0; } #notification-banner-placeholder .whats-new-header h2 { font-size: 14px; } #notification-banner-placeholder .whats-new-ticker { animation-duration: 20s; } #notification-banner-placeholder .update-item { padding: 6px 12px; } }
+</style>
 </head>
 
 <body class="rbt-header-sticky">

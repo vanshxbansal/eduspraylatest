@@ -87,7 +87,7 @@ $whats_new_duplicated = !empty($whats_new_items) ? array_merge($whats_new_items,
 /* What's New section – same as course page (notification data) */
 .whats-new-section {
     background: white;
-    padding: 15px 0;
+    padding: 8px 0;
     border-bottom: 1px solid #e5e7eb;
     overflow: hidden;
     position: relative;
@@ -96,7 +96,7 @@ $whats_new_duplicated = !empty($whats_new_items) ? array_merge($whats_new_items,
     display: flex;
     align-items: center;
     gap: 15px;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
     flex-wrap: wrap;
 }
 .whats-new-header h2 {
@@ -163,7 +163,7 @@ $whats_new_duplicated = !empty($whats_new_items) ? array_merge($whats_new_items,
 .update-author { font-weight: 500; }
 .update-date { color: #999; }
 @media (max-width: 768px) {
-    .whats-new-section { padding: 12px 0; }
+    .whats-new-section { padding: 8px 0; }
     .whats-new-header { flex-direction: row; align-items: center; gap: 10px; }
     .whats-new-header h2 { font-size: 14px; }
     .whats-new-ticker { animation-duration: 20s; }
